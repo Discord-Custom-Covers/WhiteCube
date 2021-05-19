@@ -1,0 +1,28 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./database.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  user_id String @unique
+  role String
+}
+
+model Server {
+  server_id String @unique
+  log_channel String @unique
+  request_channel String @unique
+}
+
+model Settings {
+  enabled Boolean @default(true) @unique
+  prefix String @default("bg!") @unique
+}
+
+model Domains {
+  domain String @unique
+}
