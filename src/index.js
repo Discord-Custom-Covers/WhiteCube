@@ -12,6 +12,8 @@ const extractHostname = require("./helpers/extractHostname.js").extractHostname;
 const sanitize = require("./helpers/sanitize.js").sanitize;
 const sleep = require("./helpers/sleep.js").sleep;
 
+var queueBusy = false;
+
 // Node.js is innovative technology that doesn't have top level await. Truly a masterpiece.
 (async function () {
   const Eris = require("eris");
@@ -258,7 +260,50 @@ const sleep = require("./helpers/sleep.js").sleep;
 You can view and cancel your request at <https://discord.com/channels/${msg.guildID}/${logChannel}/${request.id}>.`;
   });
 
-  var queueBusy = false;
+  bot.registerCommand("remove", async (msg, args) => {
+    while (queueBusy) await sleep(500);
+    queueBusy = true;
+
+    const bannedUser = await prisma.user.findFirst({
+      where: { user_id: msg.author.id, role: "banned" },
+    });
+
+    if (bannedUser) {
+      queueBusy = false;
+      return "You are banned from using the bot.";
+    }
+
+    const bgFile = await octokit.rest.repos.getContent({
+      owner: process.env.REPO_OWNER,
+      repo: process.env.REPO_NAME,
+      path: "dist/usrbg.json",
+    });
+
+    const backgroundFile = base64.decode(bgFile.data.content);
+
+    const backgrounds = JSON.parse(backgroundFile);
+
+    if (backgrounds[msg.author.id]) {
+      delete backgrounds[msg.author.id];
+      const stringVersion = JSON.stringify(backgrounds, null, 2);
+      if (!(backgrounds == stringVersion)) {
+        await octokit.repos.createOrUpdateFileContents({
+          owner: process.env.REPO_OWNER,
+          repo: process.env.REPO_NAME,
+          path: "dist/usrbg.json",
+          message: `[WhiteCube] Remove background for ${msg.author.id}`,
+          content: base64.encode(stringVersion),
+          sha: bgFile.data.sha,
+        });
+
+        queueBusy = false;
+        return "Your BG has been removed!";
+      }
+    } else {
+      queueBusy = false;
+      return "You didn't have a BG for me to remove in the first place.";
+    }
+  });
 
   bot.on("messageReactionAdd", async (message, emoji, reactor) => {
     if (reactor.user.bot) return;
@@ -340,12 +385,12 @@ You can view and cancel your request at <https://discord.com/channels/${msg.guil
         });
       }
 
+      queueBusy = false;
+
       await msg.edit({
         content: `Request for <@${bgData["Author"]}> accepted!`,
         embed: null,
       });
-
-      queueBusy = false;
     }
   });
 
