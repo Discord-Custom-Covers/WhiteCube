@@ -19,6 +19,7 @@ var queueBusy = false;
   const Eris = require("eris");
 
   const roles = ["admin", "mod", "banned", "none"];
+  const positions = new Set(["top", "bottom", "right", "left"]);
 
   const octokit = new Octokit({
     auth: process.env.GIT_TOKEN,
@@ -78,8 +79,8 @@ var queueBusy = false;
           await prisma.user.delete({ where: { user_id: userId } });
         }
       } catch (err) {
-        return "An error occurred.";
         console.log(err);
+        return "An error occurred.";
       }
 
       return "Role update pushed!";
@@ -224,7 +225,7 @@ var queueBusy = false;
     var values = [
       {
         name: "Author",
-        value: msg.author.id,
+        value: `<@!${msg.author.tag}> (${msg.author.id})`,
       },
       {
         name: "Background",
@@ -234,7 +235,7 @@ var queueBusy = false;
 
     if (position) {
       position = position.toLowerCase();
-      if (position == "left" || position == "right") {
+      if (positions.has(position)) {
         values.push({
           name: "Position",
           value: position,
