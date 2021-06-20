@@ -225,7 +225,7 @@ var queueBusy = false;
     var values = [
       {
         name: "Author",
-        value: `${msg.author.mention} (${msg.author.username}#${msg.author.discriminator})`,
+        value: `${msg.author.mention} (${msg.author.id})`,
       },
       {
         name: "Background",
