@@ -326,7 +326,7 @@ You can view and cancel your request at <https://discord.com/channels/${msg.guil
 
     if (emoji.name == "❌" && reactor.id == bgData["Author"]) {
       msg.edit({
-        content: `Request for <@${bgData["Author"]}> cancelled.`,
+        content: `Request for ${bgData["Author"]} cancelled.`,
         embed: null,
       });
       return;
@@ -342,7 +342,7 @@ You can view and cancel your request at <https://discord.com/channels/${msg.guil
 
     if (emoji.name == "❌") {
       msg.edit({
-        content: `Request for <@${bgData["Author"]}> denied by moderator.`,
+        content: `Request for ${bgData["Author"]} denied by moderator.`,
         embed: null,
       });
     }
@@ -359,7 +359,7 @@ You can view and cancel your request at <https://discord.com/channels/${msg.guil
 
       const backgroundFile = base64.decode(bgFile.data.content);
 
-      const backgroundUser = bgData["Author"];
+      const backgroundUser = /\((\d+)\)/.exec(bgData["Author"])[1];
       const backgroundPosition = bgData["Position"];
 
       var backgrounds = JSON.parse(backgroundFile);
@@ -389,7 +389,7 @@ You can view and cancel your request at <https://discord.com/channels/${msg.guil
       queueBusy = false;
 
       await msg.edit({
-        content: `Request for <@${bgData["Author"]}> accepted!`,
+        content: `Request for ${bgData["Author"]} accepted!`,
         embed: null,
       });
     }
